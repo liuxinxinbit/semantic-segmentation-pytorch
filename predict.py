@@ -59,10 +59,10 @@ def get_args():
                         help='filenames of input images', required=True)
 
     parser.add_argument('--output', '-o', metavar='INPUT', nargs='+',
-                        help='Filenames of ouput images')
+                        help='Filenames of ouput images',default=F)
     parser.add_argument('--viz', '-v', action='store_true',
                         help="Visualize the images as they are processed",
-                        default=False)
+                        default=True)
     parser.add_argument('--no-save', '-n', action='store_true',
                         help="Do not save the output masks",
                         default=False)
