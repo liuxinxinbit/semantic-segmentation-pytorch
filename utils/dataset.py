@@ -27,7 +27,7 @@ class BasicDataset(Dataset):
         image = Image.fromarray(image.astype('uint8')).convert('RGB')
         truth_mask = Image.fromarray(truth_mask.astype('uint8'))
         image,truth_mask = preprocess(image,truth_mask)   
-        print(np.max(truth_mask))
+        # print(np.max(truth_mask))
         # truth_mask=truth_mask+1
         image = image/255
         # truth_mask = (np.arange(self.labels) == truth_mask[...,None]-1).astype(int) # encode to one-hot-vector
