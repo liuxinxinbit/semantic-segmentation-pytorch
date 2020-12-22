@@ -28,12 +28,13 @@ class BasicDataset(Dataset):
         truth_mask = Image.fromarray(truth_mask.astype('uint8'))
         image,truth_mask = preprocess(image,truth_mask)   
         # print(np.max(truth_mask))
-        # truth_mask=truth_mask+1
+        truth_mask=truth_mask+1
         image = image/255
         # truth_mask = (np.arange(self.labels) == truth_mask[...,None]-1).astype(int) # encode to one-hot-vector
-
+        image = image.transpose((2,0,1))
+        # truth_mask = truth_mask.transpose((2,0,1))
         return {
-            'image': torch.from_numpy(image.transpose((2,0,1))).type(torch.FloatTensor),
+            'image': torch.from_numpy(image ).type(torch.FloatTensor),
             'mask': torch.from_numpy(truth_mask).type(torch.FloatTensor)
         }
     def read_traindata_names(self,data_dir):
