@@ -11,7 +11,7 @@ from torchvision import transforms
 from unet import UNet
 from utils.data_vis import plot_img_and_mask
 from utils.dataset import BasicDataset
-
+import matplotlib.pyplot as plt
 
 def predict_img(net,
                 full_img,
@@ -20,33 +20,33 @@ def predict_img(net,
                 out_threshold=0.5):
     net.eval()
 
-    img = torch.from_numpy(BasicDataset.preprocess(full_img, scale_factor))
+    img = torch.from_numpy(full_img)
 
     img = img.unsqueeze(0)
     img = img.to(device=device, dtype=torch.float32)
 
     with torch.no_grad():
         output = net(img)
+    return output.cpu().numpy()
+        # if net.n_classes > 1:
+        #     probs = F.softmax(output, dim=1)
+        # else:
+        #     probs = torch.sigmoid(output)
 
-        if net.n_classes > 1:
-            probs = F.softmax(output, dim=1)
-        else:
-            probs = torch.sigmoid(output)
+        # probs = probs.squeeze(0)
 
-        probs = probs.squeeze(0)
+        # tf = transforms.Compose(
+        #     [
+        #         transforms.ToPILImage(),
+        #         # transforms.Resize(full_img.size[1]),
+        #         transforms.ToTensor()
+        #     ]
+        # )
 
-        tf = transforms.Compose(
-            [
-                transforms.ToPILImage(),
-                transforms.Resize(full_img.size[1]),
-                transforms.ToTensor()
-            ]
-        )
+        # probs = tf(probs.cpu())
+        # full_mask = probs.squeeze().cpu().numpy()
 
-        probs = tf(probs.cpu())
-        full_mask = probs.squeeze().cpu().numpy()
-
-    return full_mask > out_threshold
+    # return full_mask > out_threshold
 
 
 def get_args():
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     in_files = args.input
     out_files = get_output_filenames(args)
 
-    net = UNet(n_channels=3, n_classes=1)
+    net = UNet(n_channels=3, n_classes=3)
 
     logging.info("Loading model {}".format(args.model))
 
@@ -112,25 +112,35 @@ if __name__ == "__main__":
     net.load_state_dict(torch.load(args.model, map_location=device))
 
     logging.info("Model loaded !")
-
+    in_files=['00002.jpg']
     for i, fn in enumerate(in_files):
         logging.info("\nPredicting image {} ...".format(fn))
 
-        img = Image.open(fn)
+        img = np.array(Image.open(fn)).transpose((2,0,1))
 
         mask = predict_img(net=net,
                            full_img=img,
                            scale_factor=args.scale,
                            out_threshold=args.mask_threshold,
                            device=device)
+        print(mask.shape)
+        prediction = np.argmax(mask[0,:,:,:],axis = 0)+1
+        print(np.max(prediction))
+        plt.subplot(1, 2, 1)
+        plt.imshow(img.transpose((1,2,0)))
+        plt.subplot(1, 2, 2)
+        plt.imshow(prediction)
+        # plt.pause(0.01)
+        # plt.clf()
+        plt.show()
 
-        if not args.no_save:
-            out_fn = out_files[i]
-            result = mask_to_image(mask)
-            result.save(out_files[i])
+        # if not args.no_save:
+        #     out_fn = out_files[i]
+        #     result = mask_to_image(mask)
+        #     result.save(out_files[i])
 
-            logging.info("Mask saved to {}".format(out_files[i]))
+        #     logging.info("Mask saved to {}".format(out_files[i]))
 
-        if args.viz:
-            logging.info("Visualizing results for image {}, close to continue ...".format(fn))
-            plot_img_and_mask(img, mask)
+        # if args.viz:
+        #     logging.info("Visualizing results for image {}, close to continue ...".format(fn))
+        #     plot_img_and_mask(img, mask)

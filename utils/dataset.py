@@ -19,7 +19,7 @@ class BasicDataset(Dataset):
         self.labels=3
 
     def __len__(self):
-        return 500
+        return 5000
 
     def __getitem__(self, i):
         random_line = random.choice(self.trainset)
@@ -28,7 +28,7 @@ class BasicDataset(Dataset):
         truth_mask = Image.fromarray(truth_mask.astype('uint8'))
         image,truth_mask = preprocess(image,truth_mask)   
         # print(np.max(truth_mask))
-        truth_mask=truth_mask+1
+        # truth_mask=truth_mask+1
         image = image/255
         # truth_mask = (np.arange(self.labels) == truth_mask[...,None]-1).astype(int) # encode to one-hot-vector
         image = image.transpose((2,0,1))
